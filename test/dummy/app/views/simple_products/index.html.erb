@@ -1,0 +1,42 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Simple Products</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Description</th>
+      <th>Image</th>
+      <th>Brand</th>
+      <th>Price</th>
+      <th>Condition</th>
+      <th>Category</th>
+      <th>Availability</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @simple_products.each do |simple_product| %>
+      <tr>
+        <td><%= simple_product.title %></td>
+        <td><%= simple_product.description %></td>
+        <td><%= image_tag simple_product.image %></td>
+        <td><%= simple_product.brand %></td>
+        <td><%= simple_product.price %></td>
+        <td><%= simple_product.condition %></td>
+        <td><%= simple_product.category %></td>
+        <td><%= simple_product.availability %></td>
+        <td><%= link_to 'Add to cart', '#', onclick: fb_add_to_cart_js([simple_product])%></td>
+        <td><%= link_to 'Show', simple_product %></td>
+        <td><%= link_to 'Edit', edit_simple_product_path(simple_product) %></td>
+        <td><%= link_to 'Destroy', simple_product, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Simple Product', new_simple_product_path %>

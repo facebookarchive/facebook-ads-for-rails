@@ -1,0 +1,43 @@
+# Copyright (c) 2017-present, Facebook, Inc.
+# All rights reserved.
+
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  title: product1
+  description: product1 description
+  image: http://example.com/image.jpg
+  brand: brand1
+  price: 99
+  currency: USD
+  condition: new
+  category: phones
+  availability: in stock
+  visible: true
+
+two:
+  title: product2
+  description: product2 desc
+  image: http://example.com/image2.jpg
+  brand: brand2
+  price: 10001
+  currency: USD
+  condition: used
+  category: apparel
+  availability: in stock
+  visible: true
+
+other_currency:
+  title: product3
+  description: product3 desc
+  image: http://example.com/image3.jpg
+  brand: brand3
+  price: 654
+  currency: CAD
+  condition: used
+  category: apparel
+  availability: in stock
+  visible: true
+
+hidden:
+  visible: false

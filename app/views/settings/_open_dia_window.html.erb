@@ -1,0 +1,121 @@
+<%
+  # Copyright (c) 2017-present, Facebook, Inc.
+  # All rights reserved.
+
+  require 'facebook/ads/version.rb'
+  settings = Setting.first
+%>
+<script>
+    var originParam = "<%=root_url%>";
+    var width = 1153;
+    var height = 808;
+    var topPos = screen.height / 2 - height / 2;
+    var leftPos = screen.width / 2 - width / 2;
+    var popupUrl = "<%=facebook_dia_url%>";
+    var popupWindow = null;
+    var diaSettingId = null;
+    var updateSettingsPath = "<%=update_settings_path%>";
+    fb_log = function (arg) {
+        <% unless Rails.env.production? %>
+        console.log(arg);
+        <% end %>
+    };
+
+    var diaSettings = {
+        "type": "dia settings",
+        "params": {
+            "clientSetup": {
+                "hasGzipSupport": true,
+                "popupOrigin": "https://www.facebook.com/ads/dia",
+                "feedWasDisabled": "",
+                "platform": "RubyOnRails",
+                <% if settings.try(:pixel_id) %>
+                "pixel": {"pixelId": "<%=settings.pixel_id%>"},
+                <% end %>
+                "store": {
+                    "baseUrl": originParam,
+                    "baseCurrency": "<%=currency%>",
+                    "timezoneId": <%=timezone%>,
+                    "storeName": "<%=j store_name%>",
+                    "version": "ruby:<%= RUBY_VERSION%> rails:<%=Rails.version%> <%=j store_name%>:<%=j store_version%>",
+                    "plugin_version": "<%=Facebook::Ads::VERSION%>"
+                },
+                "feed": {
+                    "enabled": true,
+                    "format": "CSV",
+                    "totalVisibleProducts": <%=products_count%>
+                },
+                <% if settings.try(:merchant_settings_id) %>
+                "diaSettingId": <%=settings.merchant_settings_id%>,
+                <% end %>
+                "feedPrepared": {
+                    "feedUrl": "<%=facebook_product_feed_url%>",
+                    "feedPingUrl": "<%=facebook_product_feed_ping_url%>",
+                    "samples": [[<%=raw product_samples.map(&:to_facebook_product_item).map(&:to_json).join("\n,\n")%>]]
+                }
+            }
+        }
+    };
+
+    function update_settings(key, value, cb) {
+        var token = document.querySelector('meta[name="csrf-token"]').content;
+        xmlHttp = new XMLHttpRequest();
+        url = updateSettingsPath;
+        xmlHttp.open('POST', url, false);
+        xmlHttp.setRequestHeader('X-CSRF-Token', token);
+        xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlHttp.onload = function () {
+            if (xmlHttp.status === 200) {
+                cb();
+            } else {
+                alert("Error upating Facebook settings (" + key + ")! Refer to server logs for more details");
+            }
+        };
+        xmlHttp.send(encodeURI('settings[' + key + ']=' + value));
+    }
+
+    // TODO report failures back to DIA
+    // TODO use 'reset' method https://fb.quip.com/FENaAXmOYyJn
+    window.addEventListener("message", function (event) {
+        fb_log(event);
+        if (event.data.type == "get dia settings") {
+            fb_log("Sending dia settings");
+            fb_log(diaSettings);
+            event.source.postMessage(diaSettings, popupUrl);
+        } else if (event.data.type == "set merchant settings") {
+            var setting_id = event.data.params.setting_id;
+            update_settings('merchant_settings_id', setting_id, function () {
+                fb_log("ack set merchant settings");
+                event.source.postMessage({type: 'ack set merchant settings', params: {}}, popupUrl);
+            });
+        } else if (event.data.type == "set pixel") {
+            var pixel_id = event.data.params.pixel_id;
+            update_settings('pixel_id', pixel_id, function () {
+                fb_log("ack set pixel");
+                event.source.postMessage({type: 'ack set pixel', params: {}}, popupUrl);
+            });
+        } else if (event.data.type == "set catalog") {
+            var catalog_id = event.data.params.catalog_id;
+            update_settings('catalog_id', catalog_id, function (data) {
+                fb_log("ack set catalog");
+                event.source.postMessage({type: 'ack set catalog', params: {}}, popupUrl);
+            });
+        } else if (event.data.type == "gen feed") {
+            fb_log("ack feed");
+            event.source.postMessage({type: 'ack feed', params: {}}, popupUrl);
+        }
+    }, false);
+
+    function openPopup() {
+        if (popupWindow) {
+            popupWindow.close();
+        }
+        window.popupWindow = window.open(popupUrl + '?origin=' + encodeURIComponent(originParam) +
+            (diaSettingId ? '&merchant_settings_id=' + diaSettingId : ''),
+            'DiaWizard',
+            ['toolbar=no', 'location=no', 'directories=no', 'status=no', 'menubar=no', 'scrollbars=no', 'resizable=no',
+                'copyhistory=no', 'width=' + width, 'height=' + height, 'top=' + topPos, 'left=' + leftPos].join(','));
+    }
+</script>
+
+<%= link_to name, "javascript:openPopup()", html_options %>

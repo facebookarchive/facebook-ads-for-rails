@@ -1,0 +1,9 @@
+# Copyright (c) 2017-present, Facebook, Inc.
+# All rights reserved.
+
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  pixel_id: 123
+  catalog_id: 
+  merchant_settings_id: 
