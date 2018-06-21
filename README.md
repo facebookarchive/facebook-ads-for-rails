@@ -1,3 +1,5 @@
+** THIS REPO HAS BEEN ARCHIVED AND IS NO LONGER BEING ACTIVELY MAINTAINED **
+
 # Facebook-ads
 
 Facebook-ads gem makes it easy to advertise e-commerce products on Facebook. 
